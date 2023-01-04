@@ -11,10 +11,8 @@ void main() async {
 }
 
 void kakaoLogin() async {
-  // 카카오 로그인 구현 예제
-
-// 카카오톡 실행 가능 여부 확인
-// 카카오톡 실행이 가능하면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
+  // 카카오톡 실행 가능 여부 확인
+  // 카카오톡 실행이 가능하면 카카오톡으로 로그인, 아니면 카카오계정으로 로그인
   if (await isKakaoTalkInstalled()) {
     try {
       await UserApi.instance.loginWithKakaoTalk();
@@ -55,16 +53,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
+  const MyHomePage();
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -74,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text("zihasoo flutter tech"),
       ),
       body: Center(
         child: Column(
@@ -87,14 +82,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 48, fontFamily: "Pretendard"),
               ),
             ),
-            TextButton(
-              onPressed: kakaoLogin,
-              child: Image.asset("assets/images/kakao_login_image.png",scale: 1.2,),
-              style: TextButton.styleFrom(
-                minimumSize: Size.zero,
-                padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
+            Stack(
+              children: [
+                Image.asset(
+                  "assets/images/kakao_login_image.png",
+                  scale: 1.2,
+                ),
+                Positioned.fill( //스택에서 자리잡을 때 쓰는 위젯
+                    child: Material( //이 위젯이 있어야지 잉크 효과가 보임
+                  color: Colors.transparent,
+                  child: InkWell( //제스쳐디텍터 + 잉크퍼짐효과 위젯
+                    onTap: kakaoLogin,
+                  ),
+                ))
+              ],
             )
           ],
         ),
