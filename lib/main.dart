@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kakao_flutter_sdk_common/kakao_flutter_sdk_common.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:local_auth/local_auth.dart';
 
 void main() async {
   KakaoSdk.init(
@@ -39,6 +40,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool isLoggedIn = false;
+  User? user = null;
+
+  void updateLoginState() async {
+    user = await UserApi.instance.me();
+    setState(() => isLoggedIn = true);
+  }
 
   void kakaoLogin() async {
     // 카카오톡 실행 가능 여부 확인
@@ -47,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
       try {
         await UserApi.instance.loginWithKakaoTalk();
         print('카카오톡으로 로그인 성공');
+        updateLoginState();
       } catch (error) {
         print('카카오톡으로 로그인 실패 $error');
 
@@ -57,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
         try {
           await UserApi.instance.loginWithKakaoAccount();
           print('카카오계정으로 로그인 성공');
+          updateLoginState();
         } catch (error) {
           print('카카오계정으로 로그인 실패 $error');
         }
@@ -65,22 +74,20 @@ class _MyHomePageState extends State<MyHomePage> {
       try {
         await UserApi.instance.loginWithKakaoAccount();
         print('카카오계정으로 로그인 성공');
+        updateLoginState();
       } catch (error) {
         print('카카오계정으로 로그인 실패 $error');
       }
     }
-    setState(() {
-      isLoggedIn = true;
-    });
   }
 
-  Future<bool> checkKakaoToken() async {
+  void checkKakaoToken() async {
     if (await AuthApi.instance.hasToken()) {
       try {
         var token = await UserApi.instance.accessTokenInfo();
         print('토큰 유효성 체크 성공: ');
         print(token);
-        return true;
+        updateLoginState();
       } catch (error) {
         if (error is KakaoException && error.isInvalidTokenError()) {
           print('토큰 만료 $error');
@@ -91,13 +98,12 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       print('발급된 토큰 없음');
     }
-    return false;
   }
 
   @override
   void initState() {
     super.initState();
-    checkKakaoToken().then((value) => isLoggedIn = value);
+    checkKakaoToken();
   }
 
   @override
@@ -108,14 +114,35 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: EdgeInsets.all(20),
-              child: const Text(
-                "카카오 로그인 화면임",
-                style: TextStyle(fontSize: 35, fontFamily: "Pretendard"),
+            SizedBox(
+              height: 20,
+            ),
+            if (isLoggedIn)
+              OutlinedButton(
+                onPressed: () => print(user),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    children: [
+                      ClipOval(
+                        //이미지 동그랗게 만들어주는 위젯
+                        child: Image.network(
+                            user!.properties!["thumbnail_image"]!),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                          user!.properties!["nickname"]!,
+                          style: TextStyle(fontSize: 25, color: Colors.black),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+            SizedBox(
+              height: 30,
             ),
             Stack(
               children: [
@@ -142,19 +169,6 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                   onPressed: isLoggedIn
                       ? () async {
-                          var user = await UserApi.instance.me();
-                          print(user);
-                        }
-                      : null,
-                  style: Theme.of(context).textButtonTheme.style,
-                  child: Text("사용자 정보 보기",
-                      style: Theme.of(context).textTheme.bodyLarge)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: ElevatedButton(
-                  onPressed: isLoggedIn
-                      ? () async {
                           try {
                             await UserApi.instance.logout();
                             print("로그아웃 되었습니다.");
@@ -169,7 +183,22 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: Theme.of(context).textButtonTheme.style,
                   child: Text("로그아웃 하기",
                       style: Theme.of(context).textTheme.bodyLarge)),
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: ElevatedButton(
+                  onPressed: () async {
+                    var localAuth = LocalAuthentication();
+                    print(await localAuth.isDeviceSupported());
+                    bool didAuthenticate = await localAuth.authenticate(
+                      localizedReason: '생체 인증 테스트를 위해 필요함',
+                      options: const AuthenticationOptions(biometricOnly: true),
+                    );
+                  },
+                  style: Theme.of(context).textButtonTheme.style,
+                  child: Text("생체 인증하기",
+                      style: Theme.of(context).textTheme.bodyLarge)),
+            ),
           ],
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
