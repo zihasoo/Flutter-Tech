@@ -20,7 +20,7 @@ class _MyHomePageState extends State<LoginPage> {
   bool isBiometricsAvailable = false;
   final localAuth = LocalAuthentication();
 
-  void successLogin(){
+  void successLogin() {
     Get.snackbar(
       "로그인 성공",
       "카카오계정으로 로그인 되었습니다.",
@@ -101,66 +101,75 @@ class _MyHomePageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("zihasoo flutter tech"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 30,
-            ),
-            Stack(
-              children: [
-                Image.asset(
-                  "assets/images/kakao_login_image.png",
-                  scale: 1.2,
-                ),
-                Positioned.fill( //스택에서 자리잡을 때 쓰는 위젯
-                    child: Material( //이 위젯이 있어야지 잉크 효과가 보임
-                      color: Colors.transparent,
-                      child: InkWell( //제스쳐디텍터 + 잉크퍼짐효과 위젯
-                        onTap: kakaoLogin,
-                      ),
-                    ))
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: ElevatedButton(
-                  onPressed: isBiometricsAvailable ? () async {
-                    bool authenticateSuccess = await localAuth.authenticate(
-                      localizedReason: '지문 인식 해보셈',
-                      authMessages: const [
-                        AndroidAuthMessages(
-                          signInTitle: '생체 인증으로 로그인하기',
-                          cancelButton: '취소하기',
-                        ),
-                        IOSAuthMessages(
-                          cancelButton: '취소하기',
-                        ),
-                      ],
-                      options: const AuthenticationOptions(biometricOnly: true),
-                    );
-                    if(authenticateSuccess){
-                      Get.snackbar(
-                        "로그인 성공",
-                        "생체 인증으로 로그인 했음\n근데 화면 넘어갈려면 카카오 로그인 해야됨",
-                        colorText: Colors.white,
-                        backgroundColor: Colors.lightBlue,
-                        icon: const Icon(Icons.add_alert),
-                      );
-                    }
-                  } : null,
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("zihasoo flutter tech"),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 30,
+              ),
+              Stack(
+                children: [
+                  Image.asset(
+                    "assets/images/kakao_login_image.png",
+                    scale: 1.2,
+                  ),
+                  Positioned.fill(
+                      //스택에서 자리잡을 때 쓰는 위젯
+                      child: Material(
+                    //이 위젯이 있어야지 잉크 효과가 보임
+                    color: Colors.transparent,
+                    child: InkWell(
+                      //제스쳐디텍터 + 잉크퍼짐효과 위젯
+                      onTap: kakaoLogin,
+                    ),
+                  ))
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                  onPressed: isBiometricsAvailable
+                      ? () async {
+                          bool authenticateSuccess =
+                              await localAuth.authenticate(
+                            localizedReason: '지문 인식 해보셈',
+                            authMessages: const [
+                              AndroidAuthMessages(
+                                signInTitle: '생체 인증으로 로그인하기',
+                                cancelButton: '취소하기',
+                              ),
+                              IOSAuthMessages(
+                                cancelButton: '취소하기',
+                              ),
+                            ],
+                            options: const AuthenticationOptions(
+                                biometricOnly: true),
+                          );
+                          if (authenticateSuccess) {
+                            Get.snackbar(
+                              "로그인 성공",
+                              "생체 인증으로 로그인 했음\n근데 화면 넘어갈려면 카카오 로그인 해야됨",
+                              colorText: Colors.white,
+                              backgroundColor: Colors.lightBlue,
+                              icon: const Icon(Icons.add_alert),
+                            );
+                          }
+                        }
+                      : null,
                   style: Theme.of(context).textButtonTheme.style,
                   child: Text("생체 인증하기",
                       style: Theme.of(context).textTheme.bodyLarge)),
-            ),
-          ],
-        ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+            ],
+          ),
+        ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
